@@ -1,0 +1,30 @@
+{
+    "name": "picbot-mongoose",
+    "version": "1.0.0",
+    "description": "mongoose database handler for picbot-engine",
+    "type": "module",
+    "main": "dist/index.js",
+    "files": [
+        "dist/"
+    ],
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -p ./tsconfig.json",
+        "prepare": "npm run build"
+    },
+    "keywords": [
+        "database",
+        "mongoose",
+        "mongodb",
+        "picbot-engine"
+    ],
+    "author": "Picalines",
+    "license": "ISC",
+    "dependencies": {
+        "mongoose": "^5.12.0",
+        "picbot-engine": "^2.2.0"
+    },
+    "devDependencies": {
+        "@types/mongoose": "^5.10.3"
+    }
+}
