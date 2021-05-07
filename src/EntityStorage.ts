@@ -37,11 +37,13 @@ const _entityStorage = <E extends EntityType>(model: mongoose.Model<mongoose.Doc
 export const entityStorage = async <E extends EntityType>(manager: EntityManager<E>, model: mongoose.Model<mongoose.Document>): Promise<EntityStorage<E>> => {
     const storage = _entityStorage(model);
 
-    await Promise.all(
-        (manager.cache as Collection<string, Entity<E>>).map(entity => model.findByIdAndUpdate(entity.id, {}, {
-            upsert: true, setDefaultsOnInsert: true, useFindAndModify: false
-        }))
-    );
+    if (Object.keys(model.schema.paths).length > 1) {
+        await Promise.all(
+            (manager.cache as Collection<string, Entity<E>>).map(entity => model.findByIdAndUpdate(entity.id, {}, {
+                upsert: true, setDefaultsOnInsert: true, useFindAndModify: false
+            }))
+        );
+    }
 
     return storage;
 };
