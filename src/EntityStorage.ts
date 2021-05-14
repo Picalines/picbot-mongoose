@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { Collection } from "discord.js";
-import { Entity, EntityManager, EntityStorage, EntityType } from "picbot-engine";
+import { Entity, EntityStorage, EntityType } from "picbot-engine";
 import { expressionToFilter } from "./Expression.js";
 import { managerToModel } from "./Utils.js";
 
@@ -8,7 +8,7 @@ const findByIdOrCreate = async <T extends mongoose.Document>(model: mongoose.Mod
     return await model.findById(id).exec() ?? await model.create({ _id: id });
 };
 
-const _entityStorage = <E extends EntityType>(model: mongoose.Model<mongoose.Document>): EntityStorage<E> => ({
+export const entityStorage = <E extends EntityType>(model: mongoose.Model<mongoose.Document>): EntityStorage<E> => ({
     accessState: ({ id }, { name, defaultValue }) => ({
         set: async value => void await model.findByIdAndUpdate(
             id,
@@ -16,7 +16,10 @@ const _entityStorage = <E extends EntityType>(model: mongoose.Model<mongoose.Doc
             { setDefaultsOnInsert: true, upsert: true, useFindAndModify: false }
         ).exec(),
 
-        value: async () => (await findByIdOrCreate(model, id)).get(name) ?? defaultValue,
+        value: async () => {
+            const doc = await findByIdOrCreate(model, id);
+            return doc.$isDefault(name) ? defaultValue : doc.get(name);
+        },
     }),
 
     delete: async ({ id }) => void await model.deleteOne({ id }).exec(),
@@ -33,17 +36,3 @@ const _entityStorage = <E extends EntityType>(model: mongoose.Model<mongoose.Doc
         return selected.map(doc => (manager.cache as Collection<string, Entity<E>>).get(doc.id)!);
     }
 });
-
-export const entityStorage = async <E extends EntityType>(manager: EntityManager<E>, model: mongoose.Model<mongoose.Document>): Promise<EntityStorage<E>> => {
-    const storage = _entityStorage(model);
-
-    if (Object.keys(model.schema.paths).length > 1) {
-        await Promise.all(
-            (manager.cache as Collection<string, Entity<E>>).map(entity => model.findByIdAndUpdate(entity.id, {}, {
-                upsert: true, setDefaultsOnInsert: true, useFindAndModify: false
-            }))
-        );
-    }
-
-    return storage;
-};
