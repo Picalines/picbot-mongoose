@@ -18,7 +18,7 @@ export const entityStorage = <E extends EntityType>(model: mongoose.Model<mongoo
 
         value: async () => {
             const doc = await findByIdOrCreate(model, id);
-            return doc.$isDefault(name) ? defaultValue : doc.get(name);
+            return (name in doc.toObject()) ? doc.get(name) : defaultValue;
         },
     }),
 
