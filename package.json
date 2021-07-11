@@ -1,6 +1,6 @@
 {
     "name": "picbot-mongoose",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "mongoose database handler for picbot-engine",
     "type": "module",
     "main": "dist/index.js",
